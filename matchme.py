@@ -29,10 +29,13 @@ with open(filename, "w+") as file_bytes:
 
         if human_name in people.keys():
             print("Got it! You like...")
-            for song in people[human_name]:
+            humans_songs = people[human_name]
+            for song in humans_songs:
                 print("\t" + song)
             print("Here are songs other people like: ")
-
+            others_list = list(set([item for sublist in list(people.values()) for item in sublist]) - set(humans_songs))
+            for song in others_list:
+                print("\t" + song)
             print("Feel free to copypaste one in or enter a new song in the format "
                   "'song name - artist' or leave blank to continue")
             new_song = input().lower()
@@ -42,11 +45,14 @@ with open(filename, "w+") as file_bytes:
             random_song_choice = random.choice(random.choice(list(people.values())))
             print("Ah, you're new here?")
             print("Here are songs other people like: ")
-            flat_list = [item for sublist in list(people.values()) for item in sublist]
-            print(flat_list)
+            simple_list = list(set([item for sublist in list(people.values()) for item in sublist]))
+            for song in simple_list:
+                print("\t" + song)
+
             print("Feel free to copypaste one in or enter a new song in the format 'song name - artist'")
             new_song = input().lower()
-            people[human_name] = [new_song]
+            if len(new_song) != 0:
+                people[human_name] = new_song
 
         all_people = list(people.keys())
         all_groups = list(chain.from_iterable(combinations(all_people, r) for r in range(2, len(all_people) + 1)))
