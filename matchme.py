@@ -45,11 +45,22 @@ with open(filename, "w+") as file_bytes:
                 print("\t" + song)
 
             # Show the songs that are in other people's lists, but not this person's list
-            print("Here are songs other people like: ")
-            # Black magic that removes duplicates and this person's songs
-            others_list = list(set([item for sublist in list(people.values()) for item in sublist]) - set(humans_songs))
+            print("Here are songs other people like (in order of popularity): ")
+            # Take all of the songs from all of the people and turn it into a single list
+            flat_list = [item for sublist in list(people.values()) for item in sublist]
+            # Remove all of the songs that this person already likes and all of the duplicates
+            others_list = list(set(flat_list) - set(humans_songs))
+            sortable_list = []
+
+            # Add a tuple to the list with the song name and # of times it appears, then sort by that number
             for song in others_list:
-                print("\t" + song)
+                sortable_list.append((song, flat_list.count(song)))
+            sortable_list.sort(key=lambda tup: tup[1], reverse=True)
+
+            # Print all the songs from most popular to least
+            for song in sortable_list:
+                print("\t" + song[0])
+
             # Get the user's input on what song they would like to add
             print("Feel free to copypaste one in or enter a new song in the format "
                   "'song name - artist' or leave blank to continue")
@@ -61,11 +72,23 @@ with open(filename, "w+") as file_bytes:
         else:
             # Show all of the songs in everyone else's lists
             print("Ah, you're new here?")
-            print("Here are songs other people like: ")
-            simple_list = list(set([item for sublist in list(people.values()) for item in sublist]))
-            for song in simple_list:
-                print("\t" + song)
+            print("Here are songs other people like (in order of popularity): ")
 
+            # Take all of the songs from all of the people and turn it into a single list
+            flat_list = [item for sublist in list(people.values()) for item in sublist]
+            # Remove all of the duplicates
+            simple_list = list(set(flat_list))
+            sortable_list = []
+
+            # Add a tuple to the list with the song name and # of times it appears, then sort by that number
+            for song in simple_list:
+                sortable_list.append((song, flat_list.count(song)))
+            sortable_list.sort(key=lambda tup: tup[1], reverse=True)
+
+            # Print all the songs from most popular to least
+            for song in sortable_list:
+                print("\t" + song[0])
+            
             # Get the new user's input on what song to add
             print("Copypaste one in or, if you don't like any, enter a new song in the format 'song name - artist'")
             new_song = input().lower()
