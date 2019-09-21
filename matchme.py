@@ -1,6 +1,7 @@
 # Import all the needed things
 import os
 import json
+import csv
 from itertools import chain, combinations
 
 # Set it up with my basic info for a storage variable
@@ -98,12 +99,22 @@ with open(filename, "w+") as file_bytes:
                 if original:
                     working_groups[group] = len(remaining_songs)
 
-        # Get the average group size
+        # Get the average group size and all the group sizes
         average_group_size = 0
+        all_the_numbers = []
         for wg in list(working_groups.keys()):
             average_group_size += len(wg)
+            all_the_numbers.append(len(wg))
         average_group_size /= len(working_groups)
 
         print("\nThe average group size for the population '{}' is {} \n".format(filename[:-5], average_group_size))
+
+        # if the user wants it, dump all the numbers into a CSV file
+        print_all_data_q = input("Do you want me to print all the group sizes for further analysis? (Y/n) ").lower()
+        if print_all_data_q == "y":
+            with open("results.csv", "w+") as results_file:
+                writer = csv.writer(results_file)
+                for num in all_the_numbers:
+                    writer.writerow([num])
 
     json.dump(people, file_bytes)
