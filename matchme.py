@@ -16,18 +16,14 @@ if filename[-5:] != ".json":
     print("Instead got file type: {}".format(filename[-5:]))
     exit(1)
 
-# Make sure the file actually exists
+# Make sure the file actually exists, otherwise we can't load
 if os.path.exists(filename) is True:
     print("Found it! Reading now...")
     with open(filename, 'r') as file_bytes:
         people = json.load(file_bytes)
         print("Database loaded")
-else:
-    # Exit if it doesn't exist
-    print("That's a bummer! {} doesn't exist. Check for typos? IDK".format(filename))
-    exit(2)
 
-# Open the .json file that we know exists at this point
+# Open the .json file or create it if it doesn't exist
 with open(filename, "w+") as file_bytes:
 
     # There are no do-while loops in python, so do forever, unless we break w/ ## flag
@@ -88,12 +84,12 @@ with open(filename, "w+") as file_bytes:
             # Print all the songs from most popular to least
             for song in sortable_list:
                 print("\t" + song[0])
-            
+
             # Get the new user's input on what song to add
             print("Copypaste one in or, if you don't like any, enter a new song in the format 'song name - artist'")
             new_song = input().lower()
             if len(new_song) != 0:
-                people[human_name] = new_song
+                people[human_name] = [new_song]
 
         # Get all of the possible groups (superset w/o sets of length 0 and 1)
         all_people = list(people.keys())
@@ -128,7 +124,12 @@ with open(filename, "w+") as file_bytes:
         for wg in list(working_groups.keys()):
             average_group_size += len(wg)
             all_the_numbers.append(len(wg))
-        average_group_size /= len(working_groups)
+
+        # Sanity check (you might have just created the database)
+        if len(working_groups) > 0:
+            average_group_size /= len(working_groups)
+        else:
+            average_group_size = 1
 
         print("\nThe average group size for the population '{}' is {} \n".format(filename[:-5], average_group_size))
 
