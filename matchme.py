@@ -25,7 +25,6 @@ if os.path.exists(filename) is True:
 
 # Open the .json file or create it if it doesn't exist
 with open(filename, "w+") as file_bytes:
-
     # There are no do-while loops in python, so do forever, unless we break w/ ## flag
     while True:
         human_name = input("What is your name? (or ## to exit) ").lower()
@@ -102,20 +101,21 @@ with open(filename, "w+") as file_bytes:
 
         # Iterate over all of the sets in the superset looking for music commonalities
         for group in all_groups:
-            # Get all of the songs from the first person for a starting place
-            remaining_songs = people[group[0]]
-            # For each of the rest of the people, look for commonalities in the songs shared by others in the group
-            for num in range(1, len(group)):
-                # Keep only the songs that were in the songs everyone else liked, and this person liked
-                remaining_songs = list(set(remaining_songs).intersection(people[group[num]]))
-            # If there were any songs the whole group liked, make sure this isn't a duplicate group
-            if len(remaining_songs) > 0:
-                original = True
-                for wg in list(working_groups.keys()):
-                    # Since it is impossible for 1,2 to not be a working group when 1,2,3 is, ignore the smaller ones
-                    if set(group).issubset(set(wg)):
-                        original = False
-                if original:
+            duplicate = False
+            # Since it is impossible for 1,2 to not be a working group when 1,2,3 is, ignore the smaller ones
+            for wg in list(working_groups.keys()):
+                if set(group).issubset(set(wg)):
+                    duplicate = True
+                    break
+            if not duplicate:
+                # Get all of the songs from the first person for a starting place
+                remaining_songs = people[group[0]]
+                # For each of the rest of the people, look for commonalities in the songs shared by others in the group
+                for num in range(1, len(group)):
+                    # Keep only the songs that were in the songs everyone else liked, and this person liked
+                    remaining_songs = list(set(remaining_songs).intersection(people[group[num]]))
+                # If there were any songs the whole group liked, add to list of working groups
+                if len(remaining_songs) > 0:
                     working_groups[group] = len(remaining_songs)
 
         # Get the average group size and all the group sizes
