@@ -27,12 +27,67 @@ if os.path.exists(filename) is True:
 with open(filename, "w+") as file_bytes:
     # There are no do-while loops in python, so do forever, unless we break w/ ## flag
     while True:
-        human_name = input("What is your name? (or ## to exit) ").lower()
+        human_name = input("What is your name? (or ## to exit or $$ to analyze) ").lower()
         if human_name == "##":
             break
 
+        if human_name == "$$":
+            # Get all of the possible groups (superset w/o sets of length 0 and 1)
+            all_people = list(people.keys())
+            all_groups = list(chain.from_iterable(combinations(all_people, r) for r in range(2, len(all_people) + 1)))
+            # Reverse so that we do the bigger ones first
+            all_groups.reverse()
+
+            # Storage variable that hold groups where people have at least 1 shared song
+            working_groups = {}
+
+            # Iterate over all of the sets in the superset looking for music commonalities
+            for group in all_groups:
+                duplicate = False
+                # Since it is impossible for 1,2 to not be a working group when 1,2,3 is, ignore the smaller ones
+                for wg in list(working_groups.keys()):
+                    if set(group).issubset(set(wg)):
+                        duplicate = True
+                        break
+                if not duplicate:
+                    # Get all of the songs from the first person for a starting place
+                    remaining_songs = people[group[0]]
+                    # For each of the rest of the people, look for commonalities in the songs shared by others in the group
+                    for num in range(1, len(group)):
+                        # Keep only the songs that were in the songs everyone else liked, and this person liked
+                        remaining_songs = list(set(remaining_songs).intersection(people[group[num]]))
+                        # If we hit 0 songs, yeet out of the loop immediately
+                        if remaining_songs == 0:
+                            break
+                    # If there were any songs the whole group liked, add to list of working groups
+                    if len(remaining_songs) > 0:
+                        working_groups[group] = len(remaining_songs)
+
+            # Get the average group size and all the group sizes
+            average_group_size = 0
+            all_the_numbers = []
+            for wg in list(working_groups.keys()):
+                average_group_size += len(wg)
+                all_the_numbers.append(len(wg))
+
+            # Sanity check (you might have just created the database)
+            if len(working_groups) > 0:
+                average_group_size /= len(working_groups)
+            else:
+                average_group_size = 1
+
+            print("\nThe average group size for the population '{}' is {} \n".format(filename[:-5], average_group_size))
+
+            # if the user wants it, dump all the numbers into a CSV file
+            print_all_data_q = input("Do you want me to print all the group sizes for further analysis? (Y/n) ").lower()
+            if print_all_data_q == "y":
+                with open("results.csv", "w+") as results_file:
+                    writer = csv.writer(results_file)
+                    for num in all_the_numbers:
+                        writer.writerow([num])
+
         # If the entered name already exists in the database, display existing data
-        if human_name in people.keys():
+        elif human_name in people.keys():
             # Show all the songs in this person's list
             print("Got it! You like...")
             humans_songs = people[human_name]
@@ -90,55 +145,15 @@ with open(filename, "w+") as file_bytes:
             if len(new_song) != 0:
                 people[human_name] = [new_song]
 
-        # Get all of the possible groups (superset w/o sets of length 0 and 1)
-        all_people = list(people.keys())
-        all_groups = list(chain.from_iterable(combinations(all_people, r) for r in range(2, len(all_people) + 1)))
-        # Reverse so that we do the bigger ones first
-        all_groups.reverse()
-
-        # Storage variable that hold groups where people have at least 1 shared song
-        working_groups = {}
-
-        # Iterate over all of the sets in the superset looking for music commonalities
-        for group in all_groups:
-            duplicate = False
-            # Since it is impossible for 1,2 to not be a working group when 1,2,3 is, ignore the smaller ones
-            for wg in list(working_groups.keys()):
-                if set(group).issubset(set(wg)):
-                    duplicate = True
-                    break
-            if not duplicate:
-                # Get all of the songs from the first person for a starting place
-                remaining_songs = people[group[0]]
-                # For each of the rest of the people, look for commonalities in the songs shared by others in the group
-                for num in range(1, len(group)):
-                    # Keep only the songs that were in the songs everyone else liked, and this person liked
-                    remaining_songs = list(set(remaining_songs).intersection(people[group[num]]))
-                # If there were any songs the whole group liked, add to list of working groups
-                if len(remaining_songs) > 0:
-                    working_groups[group] = len(remaining_songs)
-
-        # Get the average group size and all the group sizes
-        average_group_size = 0
-        all_the_numbers = []
-        for wg in list(working_groups.keys()):
-            average_group_size += len(wg)
-            all_the_numbers.append(len(wg))
-
-        # Sanity check (you might have just created the database)
-        if len(working_groups) > 0:
-            average_group_size /= len(working_groups)
-        else:
-            average_group_size = 1
-
-        print("\nThe average group size for the population '{}' is {} \n".format(filename[:-5], average_group_size))
-
-        # if the user wants it, dump all the numbers into a CSV file
-        print_all_data_q = input("Do you want me to print all the group sizes for further analysis? (Y/n) ").lower()
-        if print_all_data_q == "y":
-            with open("results.csv", "w+") as results_file:
-                writer = csv.writer(results_file)
-                for num in all_the_numbers:
-                    writer.writerow([num])
-
     json.dump(people, file_bytes)
+
+
+
+# get user name
+# look for name in all lists
+# if found:
+#   give list of liked songs
+# else:
+#   give list of popular songs
+# get name of song from user
+# add user's name to list of that song
